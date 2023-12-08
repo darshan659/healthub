@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+  <ul class="nav justify-content-right bg-primary" id="navBar" style="padding:6px;justify-content: right;">
+    <li class="nav-item">
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#forgotPasswordModal">Change
+        Password</button>
+    </li>
+    <li class="nav-item">
+      <form action="/logout"><button type="submit" class="btn btn-danger">LogOut</button></form>
+    </li>
+  </ul>
+
+
+  <div class="mx-auto p-2">
+    <div>
+      <div class="row">
+        <div class="col">
+          <p>Patient List
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal1">
+              Add +
+            </button>
+          </p>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">name</th>
+                <th scope="col">email</th>
+                <th scope="col">address</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% patientList.forEach(function(data){ %>
+                <tr>
+                  <td>
+                    <%= data.name %>
+                  </td>
+                  <td>
+                    <%= data.email %>
+                  </td>
+                  <td>
+                    <%= data.address %>
+                  </td>
+                </tr>
+                <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <div class="col">
+          <p>Check-Up List <button type="button" class="btn btn-primary" data-toggle="modal"
+              data-target="#exampleModal">
+              Schedule +
+            </button>
+          <table class="table table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">Patient Name</th>
+                <th scope="col">Time</th>
+                <th scope="col">Reason</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% checkUplist.forEach(function(data1){ %>
+                <tr>
+                  <td>
+                    <%= data1.name %>
+                  </td>
+                  <td>
+                    <%= data1.scheduledTime.toLocaleString()%>
+                    <div class="collapse" id="collapseExample<%=data1.chid%>">
+                      <div class="card card-body">
+                        <form action="/UpdateCheckUp" method="post" class="form">
+                          <input type="text" name="pulse"  class="form-control" placeholder="Pulse Rate" value="<%=data1.pulse%>" required><br/>
+                          <input type="text" name="oxy_lvl"  class="form-control" placeholder="Oxygen Level" value="<%=data1.oxygen_level%>" required><br/>
+                          <input type="text" name="temprature"  class="form-control" placeholder="Body Temprature" value="<%=data1.temprature%>" required><br/>
+                          <input type="hidden" name="chid" value="<%=data1.chid%>"/>
+                          <button type="submit" class="form-control">Update Checkup</button>
+                        </form>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <%= data1.reason %>
+                  </td>
+                  <td>
+                    <a class="btn btn-primary" data-toggle="collapse" href="#collapseExample<%=data1.chid%>" role="button" aria-expanded="false" aria-controls="collapseExample">
+                      Update
+                    </a>
+                  </td>
+                </tr>
+                <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+  </div>
+
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <form action="/AddPatientCheckUps" method="post">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Schedule checkUps</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+
+
+            <div class="row">
+              <div class="col">
+                <select name="patient_Id" class="form-control">
+                  <% patientList.forEach(function(data){ %>
+                    <option value="<%= data.id %>">
+                      <%= data.name %>
+                    </option>
+                    <% }) %>
+                </select>
+                <input type="hidden" name="type" value="api" />
+                <input type="hidden" name="usertype" value="3" />
+                <input type="hidden" name="callFrom" value="doctorsPage" />
+              </div>
+              <div class="col">
+                <input type="datetime-local" class="form-control" placeholder="Date & Time" name="scheduledTime"
+                  required>
+              </div>
+            </div>
+            <br />
+            <div class="row">
+              <div class="col">
+                <textarea name="reason" class="form-control" placeholder="Consultation Reason" required></textarea>
+              </div>
+            </div>
+            <br />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal fade" id="exampleModal1" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add patients</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="/AddPatients" method="post">
+          <div class="modal-body">
+
+            <div class="row">
+              <div class="col">
+                <input type="text" class="form-control" placeholder="Name" name="pname" required>
+                <input type="hidden" name="type" value="api" />
+                <input type="hidden" name="usertype" value="3" />
+                <input type="hidden" name="callFrom" value="doctorsPage" />
+              </div>
+              <div class="col">
+                <input type="email" class="form-control" placeholder="Email" name="pemail" required>
+              </div>
+              <div class="col">
+                <input type="text" class="form-control" placeholder="Phone Number" name="pnum" required>
+              </div>
+            </div>
+            <br />
+            <div class="row">
+              <div class="col">
+                <textarea class="form-control" id="Address" placeholder="Address" name="pAddress" required></textarea>
+              </div>
+
+            </div>
+
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog"
+    aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <form action="/ChangePassword" method="post">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="forgotPasswordModalLabel">Password Update</h5>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="col">
+                <input type="password" name="oldPassword" required class="form-control"
+                  placeholder="Original Password" />
+              </div>
+            </div>
+            <br />
+            <div class="row">
+              <div class="col">
+                <input type="password" name="newPassword" required class="form-control" placeholder="New  Password" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Update Password</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+
+</body>
+
+</html>

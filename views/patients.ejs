@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+    integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+    integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+    crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+  <ul class="nav justify-content-right bg-primary" id="navBar" style="padding:6px;justify-content: right;">
+    <li class="nav-item">
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#forgotPasswordModal">Change
+        Password</button>
+    </li>
+    <li class="nav-item">
+      <form action="/logout"><button type="submit" class="btn btn-danger">LogOut</button></form>
+    </li>
+  </ul>
+
+  <div class="mx-auto p-2" style="width: 1500px;">
+    <ul class="nav justify-content-right bg-primary" id="navBar" style="padding:6px;justify-content: right;">
+      <li class="nav-item">
+        <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModal">Book
+          Consultation</button>
+      </li>
+    </ul>
+    <div class="row">
+      <div class="col">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Doctor Name</th>
+              <th scope="col">Time</th>
+              <th scope="col">Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% checkUplist.forEach(function(data1){ %>
+              <tr>
+                <td>
+                  <%= data1.doctor_name %>
+                </td>
+                <td>
+                  <%= data1.scheduledTime %>
+                </td>
+                <td>
+                  <%= data1.reason %>
+                </td>
+              </tr>
+              <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+    aria-hidden="true">
+    <form action="/AddPatientCheckUps" method="post">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Schedule checkUps</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+
+
+            <div class="row">
+              <div class="col">
+                <label for="doctor_Id">Doctor</label>
+                <select name="doctor_Id" class="form-control" id="doctor_Id">
+                  <% doc_list.forEach(function(data){ %>
+                    <option value="<%= data.doc_id %>">
+                      <%= data.name %>
+                    </option>
+                    <% }) %>
+                </select>
+                <br>
+                <input type="datetime-local" class="form-control" placeholder="Date & Time" name="scheduledTime"
+                  required>
+                <input type="hidden" name="type" value="api" />
+                <input type="hidden" name="usertype" value="3" />
+                <input type="hidden" name="callFrom" value="PatientsPage" />
+              </div>
+            </div>
+            <br />
+            <div class="row">
+              <div class="col">
+                <textarea name="reason" class="form-control" placeholder="Consultation Reason" required></textarea>
+              </div>
+            </div>
+            <br />
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog"
+    aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
+    <form action="/ChangePassword" method="post">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="forgotPasswordModalLabel">Password Update</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col">
+              <input type="password" name="oldPassword" required class="form-control" placeholder="Original Password"/>
+            </div>
+          </div>
+          <br/>
+          <div class="row">
+            <div class="col">
+              <input type="password" name="newPassword" required class="form-control" placeholder="New  Password"/>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Update Password</button>
+        </div>
+      </div>
+    </div>
+  </form>
+  </div>
+
+</body>
+
+
+</html>
