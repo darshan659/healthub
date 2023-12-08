@@ -132,7 +132,7 @@ serverListener.post("/AddDoctorAccount", function (req, res) {
       values = [
         uid,
         req.body.email,
-        Password(req.body.email, "encrypt"),
+        req.body.email,
         1,
         _date,
         Math.random() + "_" + Math.random(),
@@ -365,24 +365,18 @@ serverListener.get("/admin", async function (req, res) {
           `select name,d.email as email,phone_num,type,d.id as doc_id,status from doctors as d,usertype as u,userlogin as ul
           where d.userType=u.id and ul.id=d.id`,
           function (d_err, d_results, pfs) {
-            con.query(
-              `select name,phone_num,type,d.id as nurse_id,status from nurses as d,usertype as u,userlogin as ul
-              where d.userType=u.id and ul.id=d.id`,
-              function (n_err, n_res, nfs) {
-                res.render("admin", {
-                  csrfTokenFromServer:req.csrfToken(),
-                  doctorsList: d_results,
-                  patientList: p_results,
-                  nurseList: n_res,
-                });
-              }
-            );
+            res.render("admin", {
+              csrfTokenFromServer:req.csrfToken(),
+              doctorsList: d_results,
+              patientList: p_results,
+            });
           }
         );
       }
     );
   }
 });
+
 
 serverListener.post("/DeleteDoctorAccount", function (req, res) {
   if (req.headers.cookie === undefined) {
