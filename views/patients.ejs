@@ -25,11 +25,13 @@
         Password</button>
     </li>
     <li class="nav-item">
-      <form action="/logout"><button type="submit" class="btn btn-danger">LogOut</button></form>
+      <form action="/logout"><button type="submit" class="btn btn-danger">LogOut</button>
+        <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
+      </form>
     </li>
   </ul>
 
-  <div class="mx-auto p-2" style="width: 1500px;">
+  <div class="mx-auto p-2">
     <ul class="nav justify-content-right bg-primary" id="navBar" style="padding:6px;justify-content: right;">
       <li class="nav-item">
         <button type="button" class="btn btn-warning" data-toggle="modal" data-target="#exampleModal">Book
@@ -53,7 +55,7 @@
                   <%= data1.doctor_name %>
                 </td>
                 <td>
-                  <%= data1.scheduledTime %>
+                  <%= data1.scheduledTime.toLocaleString() %>
                 </td>
                 <td>
                   <%= data1.reason %>
@@ -69,6 +71,7 @@
   <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
     aria-hidden="true">
     <form action="/AddPatientCheckUps" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -119,6 +122,7 @@
   <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog"
     aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
     <form action="/ChangePassword" method="post">
+    <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">

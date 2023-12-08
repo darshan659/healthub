@@ -26,7 +26,9 @@
         Password</button>
     </li>
     <li class="nav-item">
-      <form action="/logout"><button type="submit" class="btn btn-danger">LogOut</button></form>
+      <form action="/logout"><button type="submit" class="btn btn-danger">LogOut</button>
+        <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
+      </form>
     </li>
   </ul>
 
@@ -90,6 +92,7 @@
                     <div class="collapse" id="collapseExample<%=data1.chid%>">
                       <div class="card card-body">
                         <form action="/UpdateCheckUp" method="post" class="form">
+                          <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
                           <input type="text" name="pulse"  class="form-control" placeholder="Pulse Rate" value="<%=data1.pulse%>" required><br/>
                           <input type="text" name="oxy_lvl"  class="form-control" placeholder="Oxygen Level" value="<%=data1.oxygen_level%>" required><br/>
                           <input type="text" name="temprature"  class="form-control" placeholder="Body Temprature" value="<%=data1.temprature%>" required><br/>
@@ -125,6 +128,7 @@
   <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
     aria-hidden="true">
     <form action="/AddPatientCheckUps" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">
@@ -183,6 +187,7 @@
           </button>
         </div>
         <form action="/AddPatients" method="post">
+          <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
           <div class="modal-body">
 
             <div class="row">
@@ -220,6 +225,7 @@
   <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog"
     aria-labelledby="forgotPasswordModalLabel" aria-hidden="true">
     <form action="/ChangePassword" method="post">
+      <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
           <div class="modal-header">

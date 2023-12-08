@@ -4,7 +4,7 @@ const mysql = require("mysql2");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const { v4: uuidv4 } = require("uuid");
-
+var csrf = require('csurf');
 const con = mysql.createConnection({
   host: "localhost",
   user: "user1",
@@ -20,6 +20,10 @@ const cookieParams = {
 
 con.connect();
 
+serverListener.use(bodyParser.urlencoded({extended:false}));
+serverListener.use(cookieParser('randomStringisHere222'));
+serverListener.use(csrf({cookie:{key:'XSRF-TOKEN',path:'/'}}));
+
 //setting view engine to ejs
 serverListener.set("view engine", "ejs");
 serverListener.use(
@@ -34,7 +38,7 @@ serverListener.use(bodyParser.json());
 
 //route for index page
 serverListener.get("/", function (req, res) {
-  res.render("index");
+  res.render("index",{csrfTokenFromServer:req.csrfToken()});
 });
 
 serverListener.post("/UpdateCheckUp/", function (req, res) {
@@ -270,6 +274,7 @@ serverListener.get("/patients", function (req, res) {
           `select DISTINCT d.name as name,d.id as doc_id from doctors as d,userlogin as ul where d.userType=ul.userTypeId`,
           function (err, docs_list, fs) {
             res.render("patients", {
+              csrfTokenFromServer:req.csrfToken(),
               checkUplist: cs,
               doc_list: docs_list,
             });
@@ -365,6 +370,7 @@ serverListener.get("/admin", async function (req, res) {
               where d.userType=u.id and ul.id=d.id`,
               function (n_err, n_res, nfs) {
                 res.render("admin", {
+                  csrfTokenFromServer:req.csrfToken(),
                   doctorsList: d_results,
                   patientList: p_results,
                   nurseList: n_res,
@@ -418,6 +424,7 @@ serverListener.get("/doctors", function (req, res) {
         [req.signedCookies.token2],
         function (err, checkupResults, fs) {
           res.render("doctors", {
+            csrfTokenFromServer:req.csrfToken(),
             patientList: patientsLists,
             checkUplist: checkupResults,
             affectedRows: req.params.affectedRows ? req.params.affectedRows : 0,
