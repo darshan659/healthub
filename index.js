@@ -5,6 +5,8 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const { v4: uuidv4 } = require("uuid");
 var csrf = require('csurf');
+const bcrypt = require("bcrypt");
+
 const con = mysql.createConnection({
   host: "localhost",
   user: "user1",
@@ -20,8 +22,15 @@ const cookieParams = {
 
 con.connect();
 
-serverListener.use(bodyParser.urlencoded({extended:false}));
-serverListener.use(cookieParser('randomStringisHere222'));
+serverListener.use((req, res, next) => {
+  if(req.headers.cookie === undefined) next("route")
+  else   next();
+});
+
+let random_str = (Math.random() + 1).toString(36).substring(7);
+
+serverListener.use(bodyParser.urlencoded({extended:true}));
+serverListener.use(cookieParser(random_str));
 serverListener.use(csrf({cookie:{key:'XSRF-TOKEN',path:'/'}}));
 
 //setting view engine to ejs
@@ -32,12 +41,12 @@ serverListener.use(
   })
 );
 
-serverListener.use(cookieParser("MY SECRET"));
+//serverListener.use(cookieParser("MY SECRET"));
 
 serverListener.use(bodyParser.json());
 
 //route for index page
-serverListener.get("/", function (req, res) {
+serverListener.get("/", async (req, res)=> {
   res.render("index",{csrfTokenFromServer:req.csrfToken()});
 });
 
@@ -54,34 +63,28 @@ serverListener.post("/UpdateCheckUp/", function (req, res) {
       } else {
         if (req.signedCookies.type == "doctor") {
           res.redirect("/doctors");
-        } else {
-          res.redirect("/nurses");
-        }
+        } 
       }
     }
   );
 });
 
-serverListener.post("/ChangePassword", function (req, res) {
+serverListener.post("/ChangePassword", async (req, res) => {
   let sql = `select password,id from userlogin where id = ?`;
   con.query(
     sql,
     [req.signedCookies.token2],
-    function (errObject, results, fields) {
-      if (results[0].password == req.body.oldPassword)
+    async (errObject, results, fields) => {
+      if (await validatepassword(req.body.oldPassword,results[0].password))
         sql = `update userlogin set password = ? where id = ?`;
       con.query(
         sql,
-        [req.body.newPassword, results[0].id],
+        [await MyHash(req.body.newPassword), results[0].id],
         function (err, result, fs) {
           if (result.affectedRows > 0) {
             switch (req.signedCookies.type) {
               case "doctor": {
                 res.redirect("/doctors");
-                break;
-              }
-              case "nurse": {
-                res.redirect("/nurses");
                 break;
               }
               case "admin": {
@@ -125,17 +128,17 @@ serverListener.post("/AddDoctorAccount", function (req, res) {
     _date,
     1,
   ];
-  con.query(doctors_insert_sql, values, function (err, doc_res, fs) {
+  con.query(doctors_insert_sql, values, async (err, doc_res, fs)=> {
     if (err) res.render("error", { errorMsg: err });
     else {
-      let insert_userlogin_sql = `insert into userlogin (id,email,password,userTypeId,create_time,token) values (?,?,?,?,?,?)`;
+      let insert_userlogin_sql = `insert into userlogin (id,email,password,userTypeId,create_time,token) values (?,?,?,?,?,?);`;
       values = [
         uid,
         req.body.email,
-        req.body.email,
+        await MyHash(req.body.email),
         1,
         _date,
-        Math.random() + "_" + Math.random(),
+        Math.random(),
       ];
       con.query(
         insert_userlogin_sql,
@@ -173,7 +176,7 @@ serverListener.post("/AddPatients", function (req, res) {
     req.body.usertype,
     _date,
   ];
-  con.query(sql, values, function (error, results, fields) {
+  con.query(sql, values, async (error, results, fields)=> {
     if (error) {
       res.render("error", { errorMsg: error });
     } else {
@@ -181,7 +184,7 @@ serverListener.post("/AddPatients", function (req, res) {
       values = [
         uid,
         req.body.pemail,
-        req.body.pemail,
+        await MyHash(req.body.pemail),
         3,
         _date,
         Math.random() + "_" + Math.random(),
@@ -245,21 +248,28 @@ serverListener.post("/AddPatientCheckUps", function (req, res) {
   });
 });
 
+// serverListener.get("/logout", function (req, res) {
+//   res.clearCookie("type");
+//   res.clearCookie("token");
+//   res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
+//   res.redirect("/");
+// });
+
 serverListener.get("/logout", function (req, res) {
   res.clearCookie("type");
   res.clearCookie("token");
-  res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
+  res.clearCookie("token2");
   res.redirect("/");
 });
 
-serverListener.post("/DoctorAccountStatusChange", function (req, res) {
-  let { doc_id, status } = req.body;
-  let sql = `update userlogin set status=? where id=?`;
-  con.query(sql,[status,doc_id], function (err, results, fs) {
-    if (err) res.render("error", { errorMsg: err });
-    if (results.affectedRows > 0) res.redirect("/admin");
-  });
-});
+// serverListener.post("/DoctorAccountStatusChange", function (req, res) {
+//   let { doc_id, status } = req.body;
+//   let sql = `update userlogin set status=? where id=?`;
+//   con.query(sql,[status,doc_id], function (err, results, fs) {
+//     if (err) res.render("error", { errorMsg: err });
+//     if (results.affectedRows > 0) res.redirect("/admin");
+//   });
+// });
 
 //route for magic page
 serverListener.get("/patients", function (req, res) {
@@ -285,12 +295,12 @@ serverListener.get("/patients", function (req, res) {
   }
 });
 
-serverListener.post("/login", function (req, res) {
+serverListener.post("/login", async (req, res)=> {
   let userName = req.body.username,
     passWord = req.body.password;
-  let sql = `select ul.id as myId,ut.type as myType,status from userlogin as ul,usertype as ut where ul.userTypeId=ut.id and ul.email=?  and ul.password=?`;
+    let sql = `select ul.password, ul.id as myId,ut.type as myType,status from userlogin as ul,usertype as ut where ul.userTypeId=ut.id and ul.email=?`;
 
-  con.query(sql, [userName, passWord], function (error, results, fields) {
+  con.query(sql, [userName], async (error, results, fields) =>{
     if (error) res.render("error", { errorMsg: error });
     if (results.length === 0) {
       res.render("error", { errorMsg: "User-Authentication Error," });
@@ -300,6 +310,9 @@ serverListener.post("/login", function (req, res) {
           "Account Access Disabled .Please request Administrator to unlock your account",
       });
     } else {
+      if (!(await validatepassword(passWord, results[0].password))) {
+        res.render("error", { errorMsg: "User-Authentication Error," });
+      } else {
       switch (results[0].myType) {
         case "doctor": {
           res
@@ -311,18 +324,6 @@ serverListener.post("/login", function (req, res) {
             "private, no-cache, no-store, must-revalidate"
           );
           res.redirect("/doctors");
-          break;
-        }
-        case "nurse": {
-          res
-            .cookie("token", Math.random().toString(), cookieParams)
-            .cookie("type", results[0].myType, cookieParams)
-            .cookie("token2", results[0].myId, cookieParams);
-          res.header(
-            "Cache-Control",
-            "private, no-cache, no-store, must-revalidate"
-          );
-          res.redirect("/nurses");
           break;
         }
         case "patient": {
@@ -349,6 +350,7 @@ serverListener.post("/login", function (req, res) {
           res.redirect("/admin");
           break;
         }
+      }
       }
     }
   });
@@ -432,3 +434,13 @@ serverListener.get("/doctors", function (req, res) {
 serverListener.listen(8080, function () {
   console.log("Server is running on port 8080 ");
 });
+
+async function MyHash(plainTextPassword) {
+  const saltRounds = 10;
+  const salt = await bcrypt.genSalt(saltRounds);
+  return await bcrypt.hash(plainTextPassword, salt);
+}
+
+async function validatepassword(candidatePassword, password_hash) {
+  return await bcrypt.compare(candidatePassword, password_hash);
+}

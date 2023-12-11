@@ -23,10 +23,10 @@
                 event.preventDefault();
         }
 
-        function checkDisableSubmit(event) {
-            if (!confirm("Are you sure that you want to perform this action on this account ?"))
-                event.preventDefault();
-        }
+        // function checkDisableSubmit(event) {
+        //     if (!confirm("Are you sure that you want to perform this action on this account ?"))
+        //         event.preventDefault();
+        // }
     </script>
 </head>
 
@@ -63,7 +63,7 @@
 
                             <th>type</th>
                             <th>Delete</th>
-                            <th>Disable Account</th>
+                            <!-- <th>Disable Account</th> -->
                         </thead>
                         <tbody>
                             <% doctorsList.forEach(function(data){ %>
@@ -92,7 +92,7 @@
                                             </button>
                                         </form>
                                     </td>
-                                    <td>
+                                    <!-- <td>
                                         <form action="/DoctorAccountStatusChange" method="post"
                                             onsubmit="checkDisableSubmit(event)" id="myForm">
                                             <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
@@ -106,7 +106,7 @@
                                                 <button type="submit" class="btn btn-danger btn-sm">Change</button>
                                             </div>
                                         </form>
-                                    </td>
+                                    </td> -->
                                 </tr>
                                 <% }) %>
                         </tbody>
@@ -226,7 +226,7 @@
                         <div class="row">
                             <div class="col">
                                 <input type="password" name="newPassword" required class="form-control"
-                                    placeholder="New  Password" />
+                                    placeholder="New  Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" />
                             </div>
                         </div>
                     </div>
