@@ -27,10 +27,9 @@ serverListener.use((req, res, next) => {
   else   next();
 });
 
-let random_str = (Math.random() + 1).toString(36).substring(7);
 
 serverListener.use(bodyParser.urlencoded({extended:true}));
-serverListener.use(cookieParser(random_str));
+serverListener.use(cookieParser("RandomString"));
 serverListener.use(csrf({cookie:{key:'XSRF-TOKEN',path:'/'}}));
 
 //setting view engine to ejs
