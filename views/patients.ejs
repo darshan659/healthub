@@ -25,7 +25,7 @@
         Password</button>
     </li>
     <li class="nav-item">
-      <form action="/logout"><button type="submit" class="btn btn-danger">LogOut</button>
+      <form action="/logout" method="post"><button type="submit" class="btn btn-danger">LogOut</button>
         <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
       </form>
     </li>

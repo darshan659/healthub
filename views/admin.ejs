@@ -22,11 +22,6 @@
             if (!confirm("Are you sure that you want to delete this account ?"))
                 event.preventDefault();
         }
-
-        // function checkDisableSubmit(event) {
-        //     if (!confirm("Are you sure that you want to perform this action on this account ?"))
-        //         event.preventDefault();
-        // }
     </script>
 </head>
 
@@ -37,7 +32,7 @@
                 Password</button>
         </li>
         <li class="nav-item">
-            <form action="/logout">
+            <form action="/logout" method="post">
                 <button type="submit" class="btn btn-danger">LogOut</button>
                 <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
             </form>
@@ -63,7 +58,6 @@
 
                             <th>type</th>
                             <th>Delete</th>
-                            <!-- <th>Disable Account</th> -->
                         </thead>
                         <tbody>
                             <% doctorsList.forEach(function(data){ %>
@@ -92,21 +86,6 @@
                                             </button>
                                         </form>
                                     </td>
-                                    <!-- <td>
-                                        <form action="/DoctorAccountStatusChange" method="post"
-                                            onsubmit="checkDisableSubmit(event)" id="myForm">
-                                            <input type="hidden" name="_csrf" value="<%= csrfTokenFromServer %>">
-                                            <input type="hidden" name="doc_id" value="<%=data.doc_id %>" />
-                                            <div class="form-check form-switch">
-                                                <input type="hidden" name="status"
-                                                    value="<%=data.status == '0' ? 'true' : 'false' %>" />
-                                                <span>
-                                                    <%=data.status=='1' ? "Disable" : "Enable" %>&nbsp;&nbsp;
-                                                </span>
-                                                <button type="submit" class="btn btn-danger btn-sm">Change</button>
-                                            </div>
-                                        </form>
-                                    </td> -->
                                 </tr>
                                 <% }) %>
                         </tbody>
@@ -176,8 +155,7 @@
                         <br />
                         <div class="row">
                             <div class="col">
-                                <input type="text" name="phone_num" class="form-control" placeholder="Phone Number"
-                                    required>
+                                <input type="text" name="phone_num" class="form-control" placeholder="Phone Number" pattern="^08[35679]\d{7}$" required>
                             </div>
                         </div>
                         <br />

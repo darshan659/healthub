@@ -27,9 +27,10 @@ serverListener.use((req, res, next) => {
   else   next();
 });
 
+let random_str = (Math.random() + 1).toString(36).substring(7);
 
 serverListener.use(bodyParser.urlencoded({extended:true}));
-serverListener.use(cookieParser("RandomString"));
+serverListener.use(cookieParser(random_str));
 serverListener.use(csrf({cookie:{key:'XSRF-TOKEN',path:'/'}}));
 
 //setting view engine to ejs
@@ -39,8 +40,6 @@ serverListener.use(
     extended: true,
   })
 );
-
-//serverListener.use(cookieParser("MY SECRET"));
 
 serverListener.use(bodyParser.json());
 
@@ -83,14 +82,26 @@ serverListener.post("/ChangePassword", async (req, res) => {
           if (result.affectedRows > 0) {
             switch (req.signedCookies.type) {
               case "doctor": {
+                res.header(
+                  "Cache-Control",
+                  "private, no-cache, no-store, must-revalidate"
+                );
                 res.redirect("/doctors");
                 break;
               }
               case "admin": {
+                res.header(
+                  "Cache-Control",
+                  "private, no-cache, no-store, must-revalidate"
+                );
                 res.redirect("/admin");
                 break;
               }
               case "patient": {
+                res.header(
+                  "Cache-Control",
+                  "private, no-cache, no-store, must-revalidate"
+                );
                 res.redirect("/patients");
                 break;
               }
@@ -146,6 +157,10 @@ serverListener.post("/AddDoctorAccount", function (req, res) {
           if (err) {
             res.render("error", { errorMsg: err });
           } else {
+            res.header(
+              "Cache-Control",
+              "private, no-cache, no-store, must-revalidate"
+            );
             res.redirect(
               "/admin?affectedRows=" +
                 userLoginresults.affectedRows +
@@ -192,6 +207,10 @@ serverListener.post("/AddPatients", function (req, res) {
         if (err) {
           res.render("error", { errorMsg: err });
         } else {
+          res.header(
+            "Cache-Control",
+            "private, no-cache, no-store, must-revalidate"
+          );
           res.redirect(
             "/doctors?affectedRows=" +
               userLoginresults.affectedRows +
@@ -233,12 +252,20 @@ serverListener.post("/AddPatientCheckUps", function (req, res) {
       res.render("error", { errorMsg: error });
     } else {
       if (req.body.callFrom == "PatientsPage") {
+        res.header(
+          "Cache-Control",
+          "private, no-cache, no-store, must-revalidate"
+        );
         res.redirect(
           "/patients?affectedRows=" +
             results.affectedRows +
             "&CheckUpAdded=true"
         );
       } else {
+        res.header(
+          "Cache-Control",
+          "private, no-cache, no-store, must-revalidate"
+        );
         res.redirect(
           "/doctors?affectedRows=" + results.affectedRows + "&CheckUpAdded=true"
         );
@@ -247,31 +274,27 @@ serverListener.post("/AddPatientCheckUps", function (req, res) {
   });
 });
 
-// serverListener.get("/logout", function (req, res) {
-//   res.clearCookie("type");
-//   res.clearCookie("token");
-//   res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
-//   res.redirect("/");
-// });
 
-serverListener.get("/logout", function (req, res) {
+
+serverListener.post("/logout", function (req, res) {
   res.clearCookie("type");
   res.clearCookie("token");
   res.clearCookie("token2");
+  res.clearCookie("XSRF-TOKEN");
+  res.header(
+    "Cache-Control",
+    "private, no-cache, no-store, must-revalidate"
+  );
   res.redirect("/");
 });
 
-// serverListener.post("/DoctorAccountStatusChange", function (req, res) {
-//   let { doc_id, status } = req.body;
-//   let sql = `update userlogin set status=? where id=?`;
-//   con.query(sql,[status,doc_id], function (err, results, fs) {
-//     if (err) res.render("error", { errorMsg: err });
-//     if (results.affectedRows > 0) res.redirect("/admin");
-//   });
-// });
 
-//route for magic page
+//route for patients page
 serverListener.get("/patients", function (req, res) {
+  if(req.signedCookies.type != "patient" ){
+    res.redirect("/");
+    return;
+  }
   if (req.headers.cookie === undefined) {
     res.render("error", { errorMsg: "User-Authentication ," });
   } else {
@@ -282,6 +305,10 @@ serverListener.get("/patients", function (req, res) {
         con.query(
           `select DISTINCT d.name as name,d.id as doc_id from doctors as d,userlogin as ul where d.userType=ul.userTypeId`,
           function (err, docs_list, fs) {
+            res.header(
+              "Cache-Control",
+              "private, no-cache, no-store, must-revalidate"
+            );
             res.render("patients", {
               csrfTokenFromServer:req.csrfToken(),
               checkUplist: cs,
@@ -356,6 +383,10 @@ serverListener.post("/login", async (req, res)=> {
 });
 
 serverListener.get("/admin", async function (req, res) {
+  if(req.signedCookies.type != "admin" ){
+    res.redirect("/");
+    return;
+  }
   if (req.headers.cookie === undefined) {
     res.render("error", { errorMsg: "User-Authentication ," });
   } else {
@@ -366,6 +397,10 @@ serverListener.get("/admin", async function (req, res) {
           `select name,d.email as email,phone_num,type,d.id as doc_id,status from doctors as d,usertype as u,userlogin as ul
           where d.userType=u.id and ul.id=d.id`,
           function (d_err, d_results, pfs) {
+            res.header(
+              "Cache-Control",
+              "private, no-cache, no-store, must-revalidate"
+            );
             res.render("admin", {
               csrfTokenFromServer:req.csrfToken(),
               doctorsList: d_results,
@@ -407,6 +442,10 @@ serverListener.post("/DeleteDoctorAccount", function (req, res) {
 });
 
 serverListener.get("/doctors", function (req, res) {
+  if(req.signedCookies.type != "doctor" ){
+    res.redirect("/");
+    return;
+  }
   if (req.headers.cookie === undefined) {
     res.render("error", { errorMsg: "User-Authentication ," });
   } else {
@@ -418,6 +457,10 @@ serverListener.get("/doctors", function (req, res) {
         "select patientcheckups.id as chid,name,scheduledTime,reason,pulse,oxygen_level,temprature from patientcheckups,patients where patientcheckups.doctor_id = ? and patientcheckups.patient_id=patients.id",
         [req.signedCookies.token2],
         function (err, checkupResults, fs) {
+          res.header(
+            "Cache-Control",
+            "private, no-cache, no-store, must-revalidate"
+          );
           res.render("doctors", {
             csrfTokenFromServer:req.csrfToken(),
             patientList: patientsLists,
@@ -429,6 +472,7 @@ serverListener.get("/doctors", function (req, res) {
     });
   }
 });
+
 
 serverListener.listen(8080, function () {
   console.log("Server is running on port 8080 ");
